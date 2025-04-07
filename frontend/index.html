@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VAS Scale Session</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    .vas-container {
+      display: flex;
+      justify-content: space-between;
+      width: 600px; /* Increased width */
+      margin: 20px auto;
+    }
+    .vas-scale {
+      width: 100%;
+      margin: 20px 0;
+      height: 20px; /* Increased slider height */
+    }
+    .vas-labels {
+      display: flex;
+      justify-content: space-between;
+      width: 600px; /* Increased width */
+      margin: 0 auto;
+      font-size: 16px; /* Increased font size */
+    }
+    .vas-numbers {
+      display: flex;
+      justify-content: space-between;
+      width: 600px; /* Increased width */
+      margin: 0 auto;
+      font-size: 14px; /* Font size for numbers */
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    .hidden {
+      display: none;
+    }
+    .question {
+      margin-bottom: 30px;
+    }
+    h2 {
+      font-size: 20px; /* Increased font size for questions */
+    }
+    input[type="number"] {
+      width: 100px;
+      padding: 5px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Post-task VAS questionnaire</h1>
+
+  <!-- Input for Participant ID and Date -->
+  <div id="session-setup">
+    <label for="participant-id">Participant ID:</label>
+    <input type="text" id="participant-id" required>
+    <br><br>
+    <label for="session-date">Date:</label>
+    <input type="date" id="session-date" required>
+    <br><br>
+    <button id="start-session">Start Session</button>
+  </div>
+
+  <!-- VAS Scales -->
+  <div id="vas-session" class="hidden">
+    <!-- Task ID, Speed, and Power Input -->
+    <div id="task-id-input">
+      <label for="task-id">Task ID:</label>
+      <input type="text" id="task-id" required>
+      <br><br>
+      <label for="task-speed">Speed (km/h):</label>
+      <input type="number" id="task-speed" step="0.1" required>
+      <br><br>
+      <label for="task-power">Average Power (W):</label>
+      <input type="number" id="task-power" step="0.1" required>
+      <br><br>
+      <label for="task-HR">Average HR (bpm):</label>
+      <input type="number" id="task-HR" step="0.1" required>
+      <br><br>
+      <button id="start-task">Start Task</button>
+    </div>
+
+    <!-- VAS Scales (hidden until Task ID, Speed, and Power are entered) -->
+    <div id="vas-scales" class="hidden">
+      <!-- Reward VAS Scale -->
+      <div class="question">
+        <h2>How much satisfaction or reward did you feel after completing the task?</h2>
+        <div class="vas-container">
+          <input type="range" id="vas-reward" class="vas-scale" min="1" max="10" value="5">
+        </div>
+        <div class="vas-numbers">
+          <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+        </div>
+        <div class="vas-labels">
+          <span>1 (No feeling of reward)</span>
+          <span>10 (Extremely high feeling of reward)</span>
+        </div>
+      </div>
+
+      <!-- Pain/Discomfort VAS Scale -->
+      <div class="question">
+        <h2>From 1 to 10, how would you rate your level of pain or discomfort right now?</h2>
+        <div class="vas-container">
+          <input type="range" id="vas-pain" class="vas-scale" min="1" max="10" value="5">
+        </div>
+        <div class="vas-numbers">
+          <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+        </div>
+        <div class="vas-labels">
+          <span>1 (No discomfort/pain)</span>
+          <span>10 (Worst possible discomfort/pain)</span>
+        </div>
+      </div>
+
+      <!-- Physical Difficulty VAS Scale -->
+      <div class="question">
+        <h2>How physically difficult did you find the previous task?</h2>
+        <div class="vas-container">
+          <input type="range" id="vas-physical-difficulty" class="vas-scale" min="1" max="10" value="5">
+        </div>
+        <div class="vas-numbers">
+          <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+        </div>
+        <div class="vas-labels">
+          <span>1 (No difficulty)</span>
+          <span>10 (Really hard)</span>
+        </div>
+      </div>
+
+      <!-- Mental Difficulty VAS Scale -->
+      <div class="question">
+        <h2>How mentally difficult did you find the previous task?</h2>
+        <div class="vas-container">
+          <input type="range" id="vas-mental-difficulty" class="vas-scale" min="1" max="10" value="5">
+        </div>
+        <div class="vas-numbers">
+          <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+        </div>
+        <div class="vas-labels">
+          <span>1 (No difficulty)</span>
+          <span>10 (Really hard)</span>
+        </div>
+      </div>
+
+      <!-- Save Button and Counter -->
+      <button id="save-button">Save</button>
+      <p id="counter">VAS Scale 1 of 50</p>
+      <p id="result"></p>
+    </div>
+  </div>
+
+  <script>
+    const sessionSetup = document.getElementById('session-setup');
+    const vasSession = document.getElementById('vas-session');
+    const taskIdInputSection = document.getElementById('task-id-input');
+    const vasScalesSection = document.getElementById('vas-scales');
+    const participantIdInput = document.getElementById('participant-id');
+    const sessionDateInput = document.getElementById('session-date');
+    const startSessionButton = document.getElementById('start-session');
+    const taskIdInput = document.getElementById('task-id');
+    const taskSpeedInput = document.getElementById('task-speed');
+    const taskPowerInput = document.getElementById('task-power');
+    const startTaskButton = document.getElementById('start-task');
+    const vasReward = document.getElementById('vas-reward');
+    const vasPain = document.getElementById('vas-pain');
+    const vasPhysicalDifficulty = document.getElementById('vas-physical-difficulty');
+    const vasMentalDifficulty = document.getElementById('vas-mental-difficulty');
+    const saveButton = document.getElementById('save-button');
+    const resultDisplay = document.getElementById('result');
+    const counterDisplay = document.getElementById('counter');
+
+    let participantId = '';
+    let sessionDate = '';
+    let taskId = '';
+    let taskSpeed = '';
+    let taskPower = '';
+    let currentVAS = 1;
+
+    // Start the session
+    startSessionButton.addEventListener('click', () => {
+      participantId = participantIdInput.value;
+      sessionDate = sessionDateInput.value;
+
+      if (!participantId || !sessionDate) {
+        alert('Please enter Participant ID and Date.');
+        return;
+      }
+
+      sessionSetup.classList.add('hidden');
+      vasSession.classList.remove('hidden');
+    });
+
+    // Start a task
+    startTaskButton.addEventListener('click', () => {
+      taskId = taskIdInput.value;
+      taskSpeed = taskSpeedInput.value;
+      taskPower = taskPowerInput.value;
+
+      if (!taskId || !taskSpeed || !taskPower) {
+        alert('Please enter Task ID, Speed, and Average Power.');
+        return;
+      }
+
+      taskIdInputSection.classList.add('hidden');
+      vasScalesSection.classList.remove('hidden');
+    });
+
+    saveButton.addEventListener('click', async () => {
+      const rewardResult = vasReward.value;
+      const painResult = vasPain.value;
+      const physicalDifficultyResult = vasPhysicalDifficulty.value;
+      const mentalDifficultyResult = vasMentalDifficulty.value;
+
+      // Collect taskHR from the input field
+      const taskHR = document.getElementById('task-HR').value;
+
+      // Send data to the backend
+      try {
+        const response = await fetch('/save-vas', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            participantId,
+            sessionDate,
+            taskId,
+            taskSpeed,
+            taskPower,
+            taskHR, // Include taskHR in the request body
+            rewardResult,
+            painResult,
+            physicalDifficultyResult,
+            mentalDifficultyResult,
+          }),
+        });
+
+        if (response.ok) {
+          resultDisplay.textContent = `Saved results: Task ID = ${taskId}, Speed = ${taskSpeed}, Power = ${taskPower}, HR = ${taskHR}, Reward = ${rewardResult}, Pain = ${painResult}, Physical Difficulty = ${physicalDifficultyResult}, Mental Difficulty = ${mentalDifficultyResult}`;
+          currentVAS++;
+
+          if (currentVAS > 50) {
+            alert('Session complete! Thank you.');
+            vasSession.classList.add('hidden');
+            sessionSetup.classList.remove('hidden');
+            currentVAS = 1;
+            participantIdInput.value = '';
+            sessionDateInput.value = '';
+          } else {
+            counterDisplay.textContent = `VAS Scale ${currentVAS} of 50`;
+            // Reset sliders and inputs
+            vasReward.value = 5;
+            vasPain.value = 5;
+            vasPhysicalDifficulty.value = 5;
+            vasMentalDifficulty.value = 5;
+            taskIdInput.value = '';
+            taskSpeedInput.value = '';
+            taskPowerInput.value = '';
+            document.getElementById('task-HR').value = ''; // Reset taskHR input
+            taskIdInputSection.classList.remove('hidden');
+            vasScalesSection.classList.add('hidden');
+          }
+        } else {
+          alert('Failed to save results. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while saving the results.');
+      }
+    });
+  </script>
+</body>
+</html>
